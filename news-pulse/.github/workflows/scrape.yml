@@ -1,0 +1,29 @@
+name: News Pulse — Hourly Scrape
+
+on:
+  schedule:
+    - cron: "0 * * * *"    # every hour
+  workflow_dispatch:        # allow manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scraper/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r scraper/requirements.txt
+
+      - name: Run pipeline
+        env:
+          DB_PATH: ${{ secrets.DB_PATH }}
+        run: |
+          cd scraper
+          python3 main.py

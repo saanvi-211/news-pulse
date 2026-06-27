@@ -1,0 +1,35 @@
+services:
+  # ── Backend API ────────────────────────────────────────────────
+  - type: web
+    name: news-pulse-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    disk:
+      name: news-pulse-db
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: DB_PATH
+        value: /data/news_pulse.db
+      - key: PYTHON_BIN
+        value: python3
+      - key: SCRAPER_PATH
+        value: /opt/render/project/src/scraper/main.py
+      - key: FRONTEND_URL
+        sync: false   # set manually in Render dashboard
+
+  # ── Python pipeline cron ───────────────────────────────────────
+  - type: cron
+    name: news-pulse-scraper
+    runtime: python
+    rootDir: scraper
+    buildCommand: pip install -r requirements.txt
+    schedule: "0 * * * *"    # every hour
+    startCommand: python3 main.py
+    envVars:
+      - key: DB_PATH
+        value: /data/news_pulse.db
